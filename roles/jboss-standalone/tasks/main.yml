@@ -1,0 +1,187 @@
+---
+- name: Install  some basic dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: yes
+  with_items:
+   - unzip
+   - libselinux-python
+   - libsemanage-python
+
+- name: Create a ORACLE_HOME directory
+  become: yes
+  file:
+    dest: "{{oracle_home}}"
+    mode: 0755
+    state: directory
+
+- name : Copy the JDK Installation files
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "{{ oracle_home }}"
+    mode: 0755
+  with_items:
+    - "jdk-8u121-linux-x64.tar.gz"
+
+
+- name : Install java
+  become: yes
+  shell: "tar -xzf jdk-8u121-linux-x64.tar.gz"
+  args:
+   chdir: "{{ oracle_home }}"
+
+- name: Set java home 
+  become: yes
+  script: /root/change_java_version_7.sh
+
+
+- name: Validate Java
+  become: yes
+  command: "java -version"
+  register: javaver
+
+- debug:
+    msg: " Java Version Found {{ javaver.stderr }}"
+
+- name: Copy jboss archive to host
+  copy: 
+    src: jboss-fuse-full-6.2.0.redhat-133.zip
+    dest: /app/oracle
+  args:
+    force: no
+
+
+- name: remove jboss Home directory
+  file: state=absent path=/app/oracle/jboss-as-6.2.0
+
+- name: Create jboss Home directory
+  file: state=directory path=/app/oracle/jboss-as-6.2.0
+
+- name: unzip jboss
+  command: /usr/bin/unzip /app/oracle/jboss-fuse-full-6.2.0.redhat-133.zip
+  ignore_errors: yes
+  args:
+    chdir: /app/oracle
+
+
+- name: Rename install directory
+  command: /bin/mv jboss-fuse-6.2.0.redhat-133/ jboss-as-6.2.0 
+  args:
+    chdir: /app/oracle
+
+
+- name: Add group "jboss"
+  group:
+    name: jboss
+
+- name: Add user "jboss"
+  user:
+    name: jboss
+    group: jboss
+    home: /app/oracle/jboss-as-6.2.0
+
+- name: Change ownership of JBoss installation
+  file:
+    path: /app/oracle/jboss-as-6.2.0/
+    owner: jboss
+    group: jboss
+    state: directory
+    recurse: yes
+
+- name: Uncomments the user name and password
+  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.2.0/jboss-fuse-6.2.0.redhat-133/etc/users.properties
+
+
+- name: Start jboss fuse
+  shell:  /app/oracle/jboss-as-6.2.0/jboss-fuse-6.2.0.redhat-133/bin/start
+
+  
+- name: Wait for port 8181 to become open on the host, don't start checking for 10 seconds
+  wait_for:
+    port: 8181    
+    delay: 20
+
+- name : Copy the JDK Installation files
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "{{ oracle_home }}"
+    mode: 0755
+  with_items:
+    - "jdk-7u76-linux-x64.tar.gz"
+
+- name : Install java
+  become: yes
+  shell: "tar -xzf jdk-7u76-linux-x64.tar.gz"
+  args:
+   chdir: "{{ oracle_home }}"
+
+- name: Set java home 
+  become: yes
+  script: /root/change_java_version_8.sh
+
+
+- name: Validate Java
+  become: yes
+  command: "java -version"
+  register: javaver
+
+- debug:
+    msg: " Java Version Found {{ javaver.stderr }}"
+
+- name: Copy jboss archive to host
+  copy: 
+    src: jboss-fuse-full-6.1.0.redhat-379.zip
+    dest: /app/oracle
+  args:
+    force: no
+
+- name: unzip jboss
+  command: /usr/bin/unzip jboss-fuse-full-6.1.0.redhat-379.zip
+  ignore_errors: yes
+  args:
+    chdir: /app/oracle
+
+- name: Rename install directory
+  command: /bin/mv jboss-fuse-6.1.0.redhat-379/ jboss-as-6.1.0
+  args:
+    chdir: /app/oracle
+
+
+- name: Add user "jboss"
+  user:
+    name: jboss
+    group: jboss
+    home: /app/oracle/jboss-as-6.1.0
+
+- name: Change ownership of JBoss installation
+  file:
+    path: /app/oracle/jboss-as-6.1.0/
+    owner: jboss
+    group: jboss
+    state: directory
+    recurse: yes
+
+- name: Uncomments the user name and password
+  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-133/etc/users.properties
+
+- name: Uncomments the user name and password
+  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-379/etc/users.properties
+
+- name: Start jboss fuse
+  shell:  /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-133/bin/start
+
+- name: Start jboss fuse
+  shell:  /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-379/bin/start
+
+
+
+
+- name: Wait for port 8282 to become open on the host, don't start checking for 10 seconds
+  wait_for:
+    port: 8282    
+    delay: 20
+
+
