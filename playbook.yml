@@ -1,6 +1,6 @@
 ---
 - name: This playbook install a standalone JBoss server.
-  hosts: localhost
+  hosts: testserver
   connection: local
   become: yes
   vars_files:
