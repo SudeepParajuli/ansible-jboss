@@ -184,17 +184,14 @@
     recurse: yes
 
 - name: Uncomments the user name and password
-  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-133/etc/users.properties
+  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.1.0/etc/users.properties
 
-- name: Uncomments the user name and password
-  shell: sed -i 's/#admin/admin/' /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-379/etc/users.properties
+- name: change in port
+  shell: sed -i 's/org.osgi.service.http.port=8181/org.osgi.service.http.port=8282/' /app/oracle/jboss-as-6.1.0/etc/system.properties 
 
-- name: Start jboss fuse
-  shell:  /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-133/bin/start
 
 - name: Start jboss fuse
-  shell:  /app/oracle/jboss-as-6.1.0/jboss-fuse-6.1.0.redhat-379/bin/start
-
+  shell:  /app/oracle/jboss-as-6.1.0/bin/start
 
 
 
