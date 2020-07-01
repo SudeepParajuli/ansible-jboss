@@ -32,9 +32,19 @@
   args:
    chdir: "{{ oracle_home }}"
 
-- name: Set java home 
+- name: Set JAVA_HOME
   become: yes
-  script: /root/change_java_version_7.sh
+  lineinfile: 
+       dest: /etc/environment 
+       state: present 
+       regexp: '^JAVA_HOME'
+       line: 'JAVA_HOME={{ oracle_home }}/jdk1.8.0_121/bin'
+
+- name: export PATH
+  become: yes
+  shell: "export PATH=/app/oracle/jdk1.8.0_121/bin:${PATH}"
+  ignore_errors: true
+
 
 
 - name: Validate Java
@@ -118,9 +128,18 @@
   args:
    chdir: "{{ oracle_home }}"
 
-- name: Set java home 
+- name: Set JAVA_HOME
   become: yes
-  script: /root/change_java_version_8.sh
+  lineinfile: 
+       dest: /etc/environment 
+       state: present 
+       regexp: '^JAVA_HOME'
+       line: 'JAVA_HOME={{ oracle_home }}/jdk1.7.0_76/bin'
+
+- name: export PATH
+  become: yes
+  shell: "export PATH=/app/oracle/jdk1.7.0_76/bin:${PATH}"
+  ignore_errors: true
 
 
 - name: Validate Java
@@ -183,5 +202,3 @@
   wait_for:
     port: 8282    
     delay: 20
-
-
